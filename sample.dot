@@ -1,0 +1,29 @@
+digraph G {
+    node0 [label = "Rotor, Stator\nto\nMotor";];
+    node1 [label = "Iron Rod, Screw\nto\nRotor";];
+    node2 [label = "Iron Ingot\nto\nIron Rod";];
+    node3 [label = "(no input)\nto\nIron Ingot";];
+    node3 -> node2 [label = "Iron Ingot 50";];
+    node2 -> node1 [label = "Iron Rod 50";];
+    node4 [label = "Iron Rod\nto\nScrew";];
+    node5 [label = "Iron Ingot\nto\nIron Rod";];
+    node6 [label = "(no input)\nto\nIron Ingot";];
+    node6 -> node5 [label = "Iron Ingot 62.5";];
+    node5 -> node4 [label = "Iron Rod 62.5";];
+    node4 -> node1 [label = "Screw 250";];
+    node1 -> node0 [label = "Rotor 10";];
+    node7 [label = "Steel Pipe, Copper Wire\nto\nStator";];
+    node8 [label = "Steel Ingot\nto\nSteel Pipe";];
+    node9 [label = "Iron Ingot, Coal\nto\nSteel Ingot";];
+    node10 [label = "(no input)\nto\nIron Ingot";];
+    node10 -> node9 [label = "Iron Ingot 30";];
+    node11 [label = "(no input)\nto\nCoal";];
+    node11 -> node9 [label = "Coal 30";];
+    node9 -> node8 [label = "Steel Ingot 45";];
+    node8 -> node7 [label = "Steel Pipe 30";];
+    node12 [label = "Copper Ingot\nto\nCopper Wire";];
+    node13 [label = "(no input)\nto\nCopper Ingot";];
+    node13 -> node12 [label = "Copper Ingot 40";];
+    node12 -> node7 [label = "Copper Wire 80";];
+    node7 -> node0 [label = "Stator 10";];
+}
