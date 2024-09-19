@@ -90,10 +90,12 @@ const knowledgeJson: KnowledgeJson = {
 
 const knowledge = Knowledge.fromJson(knowledgeJson);
 
-const solution = solve(knowledge, new Item("Motor"), 5);
+(async () => {
+  const solution = await solve(knowledge, new Item("Motor"), 5);
 
-// console.log(JSON.stringify(solution, null, 2));
+  // console.log(JSON.stringify(solution, null, 2));
 
-const dotExporter = new DotExporter();
-const dot = dotExporter.toDot(solution);
-console.log(dot);
+  const dotExporter = new DotExporter();
+  const dot = dotExporter.toDot(solution);
+  console.log(dot);
+})();

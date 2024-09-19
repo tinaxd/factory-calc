@@ -18,10 +18,15 @@ export class RecipeComponent {
 }
 
 export class Recipe {
+  id: number;
+  private static nextId = 0;
+
   constructor(
     public inputs: RecipeComponent[],
     public outputs: RecipeComponent[]
-  ) {}
+  ) {
+    this.id = Recipe.nextId++;
+  }
 
   outputRateOf(item: Item): number {
     for (const output of this.outputs) {
