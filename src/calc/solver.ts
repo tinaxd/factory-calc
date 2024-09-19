@@ -53,37 +53,37 @@ export class ChainEdge {
   }
 }
 
-function makeDirectChain(
-  knowledge: Knowledge,
-  targetItem: Item,
-  targetRate: number
-): ChainNode {
-  const recipes = knowledge.findRecipesWithOutput(targetItem);
+// function makeDirectChain(
+//   knowledge: Knowledge,
+//   targetItem: Item,
+//   targetRate: number
+// ): ChainNode {
+//   const recipes = knowledge.findRecipesWithOutput(targetItem);
 
-  if (recipes.length === 0) {
-    throw new Error(`No recipe found for ${targetItem.name}`);
-  }
+//   if (recipes.length === 0) {
+//     throw new Error(`No recipe found for ${targetItem.name}`);
+//   }
 
-  if (recipes.length > 1) {
-    return new UnderdeterminedChainNode(recipes);
-  }
+//   if (recipes.length > 1) {
+//     return new UnderdeterminedChainNode(recipes);
+//   }
 
-  const recipe = recipes[0];
-  const inputNodes: [ChainEdge[], ChainNode][] = [];
-  for (const ingredient of recipe.inputs) {
-    const ingredientRate =
-      (targetRate / recipe.outputRateOf(targetItem)) * ingredient.rate;
-    const ingredientNode = makeDirectChain(
-      knowledge,
-      ingredient.item,
-      ingredientRate
-    );
-    const ingredientEdge = new ChainEdge([ingredient.item, ingredientRate]);
-    inputNodes.push([[ingredientEdge], ingredientNode]);
-  }
+//   const recipe = recipes[0];
+//   const inputNodes: [ChainEdge[], ChainNode][] = [];
+//   for (const ingredient of recipe.inputs) {
+//     const ingredientRate =
+//       (targetRate / recipe.outputRateOf(targetItem)) * ingredient.rate;
+//     const ingredientNode = makeDirectChain(
+//       knowledge,
+//       ingredient.item,
+//       ingredientRate
+//     );
+//     const ingredientEdge = new ChainEdge([ingredient.item, ingredientRate]);
+//     inputNodes.push([[ingredientEdge], ingredientNode]);
+//   }
 
-  return new DeterminedChainNode(inputNodes, recipe);
-}
+//   return new DeterminedChainNode(inputNodes, recipe);
+// }
 
 type ProblemConfig = {
   variables: Record<string, Recipe>;
@@ -103,12 +103,25 @@ export function makeTableau(
   const subjectTos: { st: Record<string, number>; lb: number }[] = [];
   const itemConsumptions: { recipeVariable: string; coeff: number }[][] = [];
   const itemWeights: number[] = [];
+  const isBaseResourceItem: boolean[] = [];
   const getItemId = (item: Item) => {
     if (itemIds[item.name] === undefined) {
       itemIds[item.name] = subjectTos.length;
       subjectTos.push({ st: {}, lb: 0 });
       itemConsumptions.push([]);
-      itemWeights.push(1);
+
+      const weight = knowledge.weights.filter((w) => w.item.equals(item));
+      if (weight.length > 0) {
+        itemWeights.push(weight[0].weight);
+      } else {
+        itemWeights.push(1);
+      }
+
+      isBaseResourceItem.push(
+        knowledge
+          .findRecipesWithOutput(item)
+          .some((recipe) => recipe.inputs.length === 0)
+      );
     }
     return itemIds[item.name];
   };
@@ -142,10 +155,23 @@ export function makeTableau(
   const objectiveCoeffs: Record<string, number> = {};
   for (let i = 0; i < itemWeights.length; i++) {
     for (const consumption of itemConsumptions[i]) {
-      objectiveCoeffs[consumption.recipeVariable] =
-        (objectiveCoeffs[consumption.recipeVariable] || 0) +
-        itemWeights[i] * consumption.coeff;
+      // only consider base resource items and ignore producer
+      if (isBaseResourceItem[i] && consumption.coeff > 0) {
+        console.log(
+          "itemWeights[i]",
+          itemWeights[i],
+          "consumption.coeff",
+          consumption.coeff
+        );
+        objectiveCoeffs[consumption.recipeVariable] =
+          (objectiveCoeffs[consumption.recipeVariable] || 0) +
+          itemWeights[i] * consumption.coeff;
+      }
     }
+  }
+  // add a small value to the objective to avoid the use of unnecessary recipes
+  for (const recipeVariable in objectiveCoeffs) {
+    objectiveCoeffs[recipeVariable] += 0.01;
   }
 
   // set target

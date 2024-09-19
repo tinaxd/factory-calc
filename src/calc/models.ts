@@ -61,7 +61,10 @@ export class Recipe {
 }
 
 export class Knowledge {
-  constructor(public recipes: Recipe[]) {}
+  constructor(
+    public recipes: Recipe[],
+    public weights: { item: Item; weight: number }[]
+  ) {}
 
   findRecipesWithOutput(item: Item): Recipe[] {
     return this.recipes.filter((recipe) => {
@@ -82,6 +85,9 @@ export class Knowledge {
             (o) => new RecipeComponent(new Item(o["item"]), o["rate"])
           )
         );
+      }),
+      j["weights"].map((w) => {
+        return { item: new Item(w["item"]), weight: w["weight"] };
       })
     );
   }
@@ -89,4 +95,5 @@ export class Knowledge {
 
 export type KnowledgeJson = {
   recipes: Parameters<typeof Recipe.fromJson>[0][];
+  weights: { item: string; weight: number }[];
 };
